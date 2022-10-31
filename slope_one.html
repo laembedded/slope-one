@@ -1,0 +1,165 @@
+<html>
+<head>
+</head>
+
+<body>
+<script type="text/javascript">
+
+
+/**************************************************************************************************
+ * 
+ *        Slope One Predictors for Online Rating-Based Collaborative Filtering
+ *
+ *                     §3.5 - The WEIGHTED SLOPE ONE Scheme
+ *
+ * if you like bob, jane, phil then youre gonna love ann.  because 
+ * 
+ *  See: http://lemire.me/fr/documents/publications/lemiremaclachlan_sdm05.pdf
+ * 
+ *         
+ *        
+ *                        ∑ [(dev_j,i + u_i) * c_j,i] for i ∈ S(u) − {j}  
+ *         PwS1(u)_j  =  ------------------------------------------------
+ *                                ∑ [c_j,i] for i ∈ S(u) − {j}
+ *        
+ *        
+ *  where:
+ *                        
+ *        PwS1(u)_j        = weighted slope one prediction of item j by user u
+ *                        
+ *        i                = item i
+ *                        
+ *        j                = item j
+ *                        
+ *        u                = set of all ratings from a given user including null ratings
+ *                        
+ *        S(u)             = set of all items rated by user u
+ *                        
+ *        u_i              = user u's rating for item i
+ *                        
+ *        χ                = set of all user ratings in the training set
+ *                        
+ *        S_i,j(χ)         = set of users who rated both item j and item i
+ *                        
+ *        card(S_j,i(χ))   = number of users who rated both item j and item i
+ *                        
+ *        c_j,i            = card(S_j,i(χ))
+ *                        
+ *        dev_j,i          = The sum of all users' "WEIGHTED POPULARITY DIFFERENTIALS" 
+ *                           for item j in respect to item i.
+ *                        
+ *                               ___      u_j − u_i
+ *                               \     ---------------   
+ *                              /__    card(S_j,i(χ))   
+ *                           u ∈ S_j,i(χ)       
+ *                        
+ *       "WEIGHTED        
+ *        POPULARITY      
+ *        DIFFERENTIALS"   =  A user's rating for item j minus their rating for item i
+ *                            over the number of users who have rated both items j and i.
+ *                        
+ *
+ *        for i ∈ S(u) − {j}  = i iterates through all items rated by user u excluding item j
+ *
+ *        for u ∈ S_j,i(χ)    = u iterates through all users who rated both items i and j
+ * 
+ * 
+ * 
+ * 
+ * 
+*/
+
+
+//     24   lost   house  bigbang
+X = [[1.0,   0.5,   0.2,   0.0],        // rob
+     [1.0,   0.0,   0.5,   0.2],        // bob
+     [0.2,   0.4,   1.0,   0.4],        // tod
+     [0.0,   0.9,   0.4,   0.5]         // dod
+];
+
+
+document.write(PwS1_j(3, 0));
+
+/*
+   function PwS1_j(user, item_j)
+
+     Computes:    PwS1(u)_j
+     
+     Equation:    See Comment Header
+
+     Returns:     The Weighted Slope-One prediction for item_j given the user
+
+*/
+
+function PwS1_j(user, item_j)
+{
+	var num = 0;
+	var den = 0;
+	var i;	
+	
+	for (i = 0; i < X[user].length; i++) {
+		if ((X[user][i]) && (i != item_j)) {  /** for all i ∈ S(u) − {j} **/
+			num += (dev(item_j, i) +  X[user][i]) * c(item_j, i);
+			den += c(item_j, i);
+		}
+	}
+
+	return (num / den);
+}
+
+
+/*
+  function dev(item_j, item_i)
+
+    Computes:     dev_j,i
+
+    Equation:     dev_j,i = ∑((u_j − u_i) / card(S_j,i(χ)) for u ∈ S_j,i(χ) 
+                   
+    Returns:      Average ratings difference between items i and j for users who rated both.       
+
+*/
+
+function dev(item_j, item_i)
+{
+	var result = 0;
+	var user;
+	var c_ij;
+	
+	c_ij = c(item_j, item_i);
+	for (user = 0; user < X.length; user++) 
+		if (X[user][item_j] && X[user][item_i]) 
+			result += (X[user][item_j] - X[user][item_i]) / c_ij;
+		
+	return (result);
+}
+
+
+/*
+   function c(item_j, item_i)
+
+     Computes:    c_j,i
+     
+     Equation:    c_j,i = card(S_j,i(X))
+
+     Returns:     Number of users who have rated both items j and i.
+
+*/
+
+function c(item_j, item_i)
+{
+	var card = 0;
+	var user;
+	
+	for (user = 0; user < X.length; user++) {
+		if (X[user][item_j] && X[user][item_i])   /* if ratings for both items j and i exist */
+			card++;
+	}
+
+	return (card);
+}
+
+
+</script>
+
+</body>
+</html>
